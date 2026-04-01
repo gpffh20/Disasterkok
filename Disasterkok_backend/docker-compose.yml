@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - gunicorn
+      - daphne
+    restart: unless-stopped
+
+  gunicorn:
+    build: .
+    command: gunicorn --bind 0.0.0.0:8000 --workers 3 config.wsgi:application
+    volumes:
+      - ./webapp:/app
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  daphne:
+    build: .
+    command: daphne -b 0.0.0.0 -p 8001 config.asgi:application
+    volumes:
+      - ./webapp:/app
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: disaster
+      POSTGRES_USER: disaster_user
+      POSTGRES_PASSWORD: Password1!
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

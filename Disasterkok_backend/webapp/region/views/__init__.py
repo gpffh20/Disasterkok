@@ -1,0 +1,4 @@
+from .regionListCreateAPIView import RegionListCreateAPIView
+from .regionRetrieveUpdateDestroyAPIView import RegionRetrieveUpdateDestroyAPIView
+from .regiondefaultAPIView import RegionDefaultAPIView
+from .regiononoffAPIView import RegionOnOffAPIView
