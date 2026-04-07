@@ -27,12 +27,14 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 RUN useradd -m -u 1000 appuser
 COPY webapp/ .
 RUN chown -R appuser:appuser /app
 USER appuser
 
-RUN python manage.py collectstatic --noinput
 EXPOSE 8000 8001
 
+ENTRYPOINT ["/entrypoint.sh"]
