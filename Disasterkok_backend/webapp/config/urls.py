@@ -6,6 +6,7 @@ from rest_framework import routers
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
+from django.http import HttpResponse
 
 router = routers.DefaultRouter()
 
@@ -21,6 +22,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('health/', lambda request: HttpResponse('ok')),
     path('admin/', admin.site.urls),
     path('users/', include('user.urls')),
     path('notifications/', include('notification.urls')),
