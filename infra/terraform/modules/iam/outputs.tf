@@ -1,4 +1,3 @@
-output "instance_public_ip" {
-  value       = ""                                          # The actual value to be outputted
-  description = "The public IP address of the EC2 instance" # Description of what this output represents
+output "instance_profile_name" {
+  value       = aws_iam_instance_profile.ec2.name
 }

@@ -1,20 +1,25 @@
-terraform {
-  required_version = ">= 1.0.0" # Ensure that the Terraform version is 1.0.0 or higher
+# EC2가 AWS 서비스를 assume 할 수 있도록 허용하는 Trust Policy
+resource "aws_iam_role" "ec2" {
+  name = "${var.project}-${var.env}-ec2-role"
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws" # Specify the source of the AWS provider
-      version = "~> 4.0"        # Use a version of the AWS provider that is compatible with version
-    }
-  }
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect    = "Allow",
+      Principal = { Service = "ec2.amazonaws.com" },
+      Action    = "sts:AssumeRole"
+    }]
+  })
 }
 
-provider "aws" {
-  region = "us-east-1" # Set the AWS region to US East (N. Virginia)
+# ECR에서 이미지를 pull 할 수 있는 권한 부여
+resource "aws_iam_role_policy_attachment" "ecr_read" {
+  role = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_instance" "aws_example" {
-  tags = {
-    Name = "ExampleInstance" # Tag the instance with a Name tag for easier identification
-  }
+# EC2에 IAM Role을 연결하기 위한 Instance Profile
+resource "aws_iam_instance_profile" "ec2" {
+  name = "${var.project}-${var.env}-ec2-profile"
+  role = aws_iam_role.ec2.name
 }
