@@ -1,5 +1,28 @@
+variable "project" {
+  type = string
+}
+
+variable "env" {
+  type = string
+}
+
+variable "subnet_id" {
+  type = string
+}
+
+variable "security_group_id" {
+  type = string
+}
+
+variable "instance_profile_name" {
+  type = string
+}
+
+variable "key_name" {
+  type = string
+}
+
 variable "instance_type" {
-  type        = string                     # The type of the variable, in this case a string
-  default     = "t2.micro"                 # Default value for the variable
-  description = "The type of EC2 instance" # Description of what this variable represents
+  type    = string
+  default = "t3.small"
 }

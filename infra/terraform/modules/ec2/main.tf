@@ -1,20 +1,29 @@
-terraform {
-  required_version = ">= 1.0.0" # Ensure that the Terraform version is 1.0.0 or higher
+data "aws_ami" "al2023" {
+  most_recent = true
+  owners      = ["amazon"]
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws" # Specify the source of the AWS provider
-      version = "~> 4.0"        # Use a version of the AWS provider that is compatible with version
-    }
+  filter {
+    name   = "name"
+    values = ["al2023-ami-2023.*-x86_64"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
   }
 }
 
-provider "aws" {
-  region = "us-east-1" # Set the AWS region to US East (N. Virginia)
-}
+resource "aws_instance" "main" {
+  ami                    = data.aws_ami.al2023.id
+  instance_type          = var.instance_type
+  subnet_id              = var.subnet_id
+  vpc_security_group_ids = [var.security_group_id]
+  iam_instance_profile   = var.instance_profile_name
+  key_name               = var.key_name
 
-resource "aws_instance" "aws_example" {
   tags = {
-    Name = "ExampleInstance" # Tag the instance with a Name tag for easier identification
+    Name    = "${var.project}-${var.env}-node"
+    Project = var.project
+    Env     = var.env
   }
 }
