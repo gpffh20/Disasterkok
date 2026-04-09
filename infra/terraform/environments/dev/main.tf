@@ -7,6 +7,14 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket = "disasterkok-tfstate"
+    key    = "dev/terraform.tfstate"
+    region = "ap-northeast-2"
+    dynamodb_table = "disasterkok-tfstate-lock"
+    encrypt = true
+  }
 }
 
 provider "aws" {
