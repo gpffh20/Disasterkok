@@ -22,3 +22,8 @@ variable "key_name" {
   type        = string
   description = "EC2 Key Pair 이름"
 }
+
+variable "k3s_version" {
+  type    = string
+  default = "v1.32.3+k3s1"
+}

@@ -49,6 +49,7 @@ module "ec2" {
   security_group_id     = module.security_group.k3s_sg_id
   instance_profile_name = module.iam.instance_profile_name
   key_name              = var.key_name
+  k3s_version           = var.k3s_version
 }
 
 module "ecr" {
