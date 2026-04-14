@@ -26,3 +26,8 @@ variable "instance_type" {
   type    = string
   default = "t3.small"
 }
+
+variable "k3s_version" {
+  type        = string
+  description = "설치할 k3s 버전 (예: v1.32.3+k3s1)"
+}
