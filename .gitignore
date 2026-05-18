@@ -3,6 +3,7 @@
 *.tfstate
 *.tfstate.backup
 *.tfvars
+infra/kubernetes/**/secret.yaml
 
 ### Django ###
 *.log

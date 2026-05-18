@@ -1,5 +1,5 @@
 name: "🔧 Chore"
-description: "빌드, 의존성, 문서 등 잡무"
+description: "빌드, 설정, 인프라, 의존성, 문서 등 잡무"
 title: "[CHORE] "
 labels: ["chore", "sp001"]
 body:
@@ -7,12 +7,29 @@ body:
     id: summary
     attributes:
       label: 작업 요약
+      placeholder: 한 줄로 작업 목적 기술
+    validations:
+      required: true
   - type: textarea
     id: details
     attributes:
       label: 세부 내용
+      placeholder: |
+        - 작성할 파일 목록
+        - 포함할 리소스 또는 설정 항목
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: 완료 기준
+      placeholder: |
+        - terraform plan 오류 없이 통과
+        - 해당 리소스가 plan 결과에 포함됨
+    validations:
+      required: true
   - type: textarea
     id: impact
     attributes:
       label: 영향 범위
-      placeholder: 빌드 시간, 패키지 크기 등
+      placeholder: 빌드 시간, 이미지 크기, 배포 방식 등
