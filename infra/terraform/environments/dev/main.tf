@@ -9,11 +9,11 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "disasterkok-tfstate"
-    key    = "dev/terraform.tfstate"
-    region = "ap-northeast-2"
+    bucket         = "disasterkok-tfstate"
+    key            = "dev/terraform.tfstate"
+    region         = "ap-northeast-2"
     dynamodb_table = "disasterkok-tfstate-lock"
-    encrypt = true
+    encrypt        = true
   }
 }
 
@@ -36,9 +36,10 @@ module "security_group" {
 }
 
 module "iam" {
-  source  = "../../modules/iam"
-  project = var.project
-  env     = var.env
+  source      = "../../modules/iam"
+  project     = var.project
+  env         = var.env
+  github_repo = var.github_repo
 }
 
 module "ec2" {
@@ -53,7 +54,7 @@ module "ec2" {
 }
 
 module "ecr" {
-  source = "../../modules/ecr"
+  source  = "../../modules/ecr"
   project = var.project
-  env = var.env
+  env     = var.env
 }
