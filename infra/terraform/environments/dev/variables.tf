@@ -27,3 +27,8 @@ variable "k3s_version" {
   type    = string
   default = "v1.32.3+k3s1"
 }
+
+variable "github_repo" {
+  type        = string
+  description = "GitHub 레포지토리 (owner/repo 형식)"
+}
