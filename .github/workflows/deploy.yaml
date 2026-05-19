@@ -14,6 +14,8 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+        image: ${{ steps.build.outputs.image }}
 
     steps:
       - name: Checkout
@@ -30,6 +32,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push Image
+        id: build
         env:
             ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
             IMAGE_TAG: ${{ github.sha }}
@@ -41,3 +44,40 @@ jobs:
           Disasterkok_backend/
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+  deploy:
+    name: Deploy to k3s
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Rolling deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+          script: |
+            IMAGE=${{ needs.build-and-push.outputs.image }}
+            kubectl set image deployment/gunicorn gunicorn=$IMAGE -n disasterkok
+            kubectl set image deployment/daphne daphne=$IMAGE -n disasterkok
+            kubectl rollout status deployment/gunicorn -n disasterkok
+            kubectl rollout status deployment/daphne -n disasterkok
+
+      - name: Smoke Test
+        uses: appleboy/ssh-action@v1
+        with:
+            host: ${{ secrets.EC2_HOST }}
+            username: ec2-user
+            key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+            script: /home/ec2-user/Disasterkok/smoke-test.sh
