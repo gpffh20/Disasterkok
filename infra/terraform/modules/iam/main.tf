@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "6.17.0"
+    }
+  }
+}
 # EC2가 AWS 서비스를 assume 할 수 있도록 허용하는 Trust Policy
 resource "aws_iam_role" "ec2" {
   name = "${var.project}-${var.env}-ec2-role"
@@ -59,4 +67,32 @@ resource "aws_iam_role" "github_actions" {
 resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
   role       = aws_iam_role.github_actions.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
+
+# EC2가 SSM Agent로 SSM 연결 권한
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role        = aws_iam_role.ec2.name
+  policy_arn  = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# Github Actions가 SSM을 통해 EC2에 명령 전송 권한
+resource "aws_iam_role_policy" "github_actions_ssm" {
+  name  = "${var.project}-${var.env}-github-actions-ssm"
+  role  = aws_iam_role.github_actions.name
+
+policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = ["ssm:SendCommand", "ssm:GetCommandInvocation"],
+      Resource = "*"
+    },
+      {
+        Effect = "Allow",
+        Action = ["ec2:DescribeInstances"],
+        Resource = "*"
+       }
+      ]
+  })
 }
