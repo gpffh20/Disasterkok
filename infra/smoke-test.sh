@@ -2,7 +2,6 @@
 set -e
 
 NAMESPACE="disasterkok"
-EC2_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
 PORT=30080
 
 echo "=== Pod 상태 확인 ==="
@@ -19,12 +18,12 @@ echo "PASS: 전체 Pod Running"
 
 echo ""
 echo "=== HTTP 200 체크 ==="
-STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$EC2_IP:$PORT/)
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:$PORT/)
 if [ "$STATUS" != "200" ]; then
   echo "FAIL: HTTP $STATUS"
   exit 1
 fi
-echo "PASS: HTTP $STATUS — http://$EC2_IP:$PORT/"
+echo "PASS: HTTP $STATUS — http://localhost:$PORT/"
 
 echo ""
 echo "=== smoke test 완료 ==="
