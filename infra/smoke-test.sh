@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 NAMESPACE="disasterkok"
 PORT=30080
 
