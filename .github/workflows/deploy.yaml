@@ -105,7 +105,7 @@ jobs:
             COMMAND_ID=$(aws ssm send-command \
               --instance-ids $INSTANCE_ID \
               --document-name "AWS-RunShellScript" \
-              --parameters commands="['/home/ec2-user/Disasterkok/smoke-test.sh']" \
+              --parameters commands="['/home/ssm-user/Disasterkok/infra/smoke-test.sh']" \
               --query "Command.CommandId" \
               --output text)
             
