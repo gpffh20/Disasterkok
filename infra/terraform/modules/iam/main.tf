@@ -1,11 +1,3 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "6.17.0"
-    }
-  }
-}
 # EC2가 AWS 서비스를 assume 할 수 있도록 허용하는 Trust Policy
 resource "aws_iam_role" "ec2" {
   name = "${var.project}-${var.env}-ec2-role"
