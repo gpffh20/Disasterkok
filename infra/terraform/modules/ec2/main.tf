@@ -29,7 +29,13 @@ resource "aws_instance" "main" {
 
   user_data = templatefile("${path.module}/user_data.sh", {
     k3s_version = var.k3s_version
+    ecr_registry = var.ecr_registry
+    aws_region = var.aws_region
   })
 
-user_data_replace_on_change = true
+  user_data_replace_on_change = true
+
+  lifecycle {
+    ignore_changes = [ami]
+  }
 }

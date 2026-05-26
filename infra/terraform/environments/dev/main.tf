@@ -51,6 +51,8 @@ module "ec2" {
   instance_profile_name = module.iam.instance_profile_name
   key_name              = var.key_name
   k3s_version           = var.k3s_version
+  ecr_registry          = split("/", module.ecr.repository_url)[0]
+  aws_region            = var.aws_region
 }
 
 module "ecr" {
