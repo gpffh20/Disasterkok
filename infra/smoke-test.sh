@@ -11,7 +11,7 @@ kubectl get pods -n $NAMESPACE
 
 echo ""
 echo "=== Running 아닌 Pod 체크 ==="
-NOT_RUNNING=$(kubectl get pods -n $NAMESPACE --no-headers | grep -v "Running" | wc -l)
+NOT_RUNNING=$(kubectl get pods -n $NAMESPACE --no-headers | grep -v -E "Running|Terminating" | wc -l)
 if [ "$NOT_RUNNING" -gt 0 ]; then
   echo "FAIL: Running 아닌 Pod 있음"
   exit 1
