@@ -28,6 +28,7 @@ urlpatterns = [
     path('notifications/', include('notification.urls')),
     path('regions/', include('region.urls')),
     path('posts/', include('post.urls')),
+    path('', include('django_prometheus.urls')),
 ]
 
 urlpatterns += [
