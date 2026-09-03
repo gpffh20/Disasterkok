@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gunicorn
+  namespace: disasterkok
+  labels:
+    release: monitoring   # kube-prometheus-stack의 release 이름과 일치해야 Prometheus가 이 ServiceMonitor를 인식함
+spec:
+  selector:
+    matchLabels:
+      app: gunicorn        # gunicorn-svc.yaml의 selector와 동일
+  namespaceSelector:
+    matchNames:
+      - disasterkok
+  endpoints:
+    - port: "8000"
+      path: /metrics
+      interval: 15s
+
+gunicorn-svc.yaml의 port: 8000은 이름이 없어서(name: 필드 없음) endpoints.port에 숫자 대신 이름을 써야 하는 게 원칙인데, 지금 Service에 포트 이름이 없으니 targetPort 기준으로 매칭이 안 될 수 있습니다. 이 부분은 gunicorn-svc.yaml에 name: http를 추가해야 할 수도 있습니다 — 4번에서 설치하고 target이 안 잡히면 이걸 먼저 의심하세요.
+
+  endpoints:
+    - port: "8000"
+      path: /metrics
+      interval: 15s
