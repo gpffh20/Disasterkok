@@ -5,22 +5,27 @@ grafana:
   enabled: true
   persistence:
     enabled: false
+  sidecar:
+    dashboards:
+      enabled: false
+    datasources:
+      enabled: false
   resources:
     requests:
-      cpu: 50m
-      memory: 128Mi
+      cpu: 30m
+      memory: 100Mi
     limits:
-      memory: 256Mi
+      memory: 200Mi
 
 prometheus:
   prometheusSpec:
-    retention: 3d
+    retention: 1d
     resources:
       requests:
-        cpu: 100m
-        memory: 256Mi
+        cpu: 50m
+        memory: 200Mi
       limits:
-        memory: 512Mi
+        memory: 400Mi
 
 kube-state-metrics:
   resources:
