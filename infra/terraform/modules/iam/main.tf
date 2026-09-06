@@ -14,7 +14,7 @@ resource "aws_iam_role" "ec2" {
 
 # ECR에서 이미지를 pull 할 수 있는 권한 부여
 resource "aws_iam_role_policy_attachment" "ecr_read" {
-  role = aws_iam_role.ec2.name
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
@@ -63,28 +63,57 @@ resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
 
 # EC2가 SSM Agent로 SSM 연결 권한
 resource "aws_iam_role_policy_attachment" "ec2_ssm" {
-  role        = aws_iam_role.ec2.name
-  policy_arn  = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.ec2.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+# ECS task가 assume하는 Trust Policy (execution role, task role 공용)
+data "aws_iam_policy_document" "ecs_tasks_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+# ECS execution role: ECR pull + CloudWatch Logs 쓰기
+resource "aws_iam_role" "ecs_execution" {
+  name               = "${var.project}-${var.env}-ecs-execution-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# ECS task role: 컨테이너 안 애플리케이션 코드가 실제로 사용하는 권한 (지금은 최소, Secrets Manager 연동 시 추가 예정)
+resource "aws_iam_role" "ecs_task" {
+  name               = "${var.project}-${var.env}-ecs-task-role"
+  assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 }
 
 # Github Actions가 SSM을 통해 EC2에 명령 전송 권한
 resource "aws_iam_role_policy" "github_actions_ssm" {
-  name  = "${var.project}-${var.env}-github-actions-ssm"
-  role  = aws_iam_role.github_actions.name
+  name = "${var.project}-${var.env}-github-actions-ssm"
+  role = aws_iam_role.github_actions.name
 
-policy = jsonencode({
+  policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = ["ssm:SendCommand", "ssm:GetCommandInvocation"],
-      Resource = "*"
-    },
-      {
-        Effect = "Allow",
-        Action = ["ec2:DescribeInstances"],
+        Effect   = "Allow",
+        Action   = ["ssm:SendCommand", "ssm:GetCommandInvocation"],
         Resource = "*"
-       }
-      ]
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["ec2:DescribeInstances"],
+        Resource = "*"
+      }
+    ]
   })
 }

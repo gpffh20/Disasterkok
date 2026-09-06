@@ -1,9 +1,9 @@
 variable "project" {
-  type        = string
+  type = string
 }
 
 variable "env" {
-  type        = string
+  type = string
 }
 
 variable "github_repo" {
