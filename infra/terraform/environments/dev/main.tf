@@ -46,13 +46,23 @@ resource "aws_secretsmanager_secret_version" "django" {
   secret_string = var.django_secret_key
 }
 
+resource "aws_secretsmanager_secret" "grafana_cloud" {
+  name = "${var.project}-${var.env}-grafana-cloud-api-token"
+}
+
+resource "aws_secretsmanager_secret_version" "grafana_cloud" {
+  secret_id     = aws_secretsmanager_secret.grafana_cloud.id
+  secret_string = var.grafana_cloud_api_token
+}
+
 module "iam" {
-  source            = "../../modules/iam"
-  project           = var.project
-  env               = var.env
-  github_repo       = var.github_repo
-  db_secret_arn     = module.rds.secret_arn
-  django_secret_arn = aws_secretsmanager_secret.django.arn
+  source             = "../../modules/iam"
+  project            = var.project
+  env                = var.env
+  github_repo        = var.github_repo
+  db_secret_arn      = module.rds.secret_arn
+  django_secret_arn  = aws_secretsmanager_secret.django.arn
+  grafana_secret_arn = aws_secretsmanager_secret.grafana_cloud.arn
 }
 
 module "ec2" {
@@ -88,16 +98,19 @@ module "rds" {
 }
 
 module "ecs" {
-  source             = "../../modules/ecs"
-  project            = var.project
-  env                = var.env
-  aws_region         = var.aws_region
-  execution_role_arn = module.iam.ecs_execution_role_arn
-  task_role_arn      = module.iam.ecs_task_role_arn
-  ecr_repository_url = module.ecr.repository_url
-  subnet_id          = module.vpc.public_subnet_id
-  subnet_id_b        = module.vpc.public_subnet_id_b
-  security_group_id  = module.security_group.ecs_sg_id
-  db_secret_arn      = module.rds.secret_arn
-  django_secret_arn  = aws_secretsmanager_secret.django.arn
+  source                       = "../../modules/ecs"
+  project                      = var.project
+  env                          = var.env
+  aws_region                   = var.aws_region
+  execution_role_arn           = module.iam.ecs_execution_role_arn
+  task_role_arn                = module.iam.ecs_task_role_arn
+  ecr_repository_url           = module.ecr.repository_url
+  subnet_id                    = module.vpc.public_subnet_id
+  subnet_id_b                  = module.vpc.public_subnet_id_b
+  security_group_id            = module.security_group.ecs_sg_id
+  db_secret_arn                = module.rds.secret_arn
+  django_secret_arn            = aws_secretsmanager_secret.django.arn
+  grafana_secret_arn           = aws_secretsmanager_secret.grafana_cloud.arn
+  grafana_cloud_prometheus_url = var.grafana_cloud_prometheus_url
+  grafana_cloud_username       = var.grafana_cloud_username
 }

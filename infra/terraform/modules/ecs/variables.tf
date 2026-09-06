@@ -34,6 +34,21 @@ variable "django_secret_arn" {
   type        = string
 }
 
+variable "grafana_secret_arn" {
+  description = "Grafana Cloud API 토큰이 담긴 Secrets Manager secret ARN"
+  type        = string
+}
+
+variable "grafana_cloud_prometheus_url" {
+  description = "Grafana Cloud Hosted Prometheus remote_write endpoint URL"
+  type        = string
+}
+
+variable "grafana_cloud_username" {
+  description = "Grafana Cloud Hosted Prometheus instance ID (basic auth username)"
+  type        = string
+}
+
 variable "subnet_id" {
   type = string
 }

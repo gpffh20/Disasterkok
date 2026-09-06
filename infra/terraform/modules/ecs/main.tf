@@ -1,3 +1,30 @@
+locals {
+  alloy_config = <<-EOT
+    prometheus.scrape "app" {
+      targets      = [{"__address__" = "localhost:8000"}]
+      metrics_path = "/metrics"
+      forward_to   = [prometheus.remote_write.grafana_cloud.receiver]
+    }
+
+    prometheus.remote_write "grafana_cloud" {
+      endpoint {
+        url = "${var.grafana_cloud_prometheus_url}"
+        basic_auth {
+          username = "${var.grafana_cloud_username}"
+          password = env("GRAFANA_CLOUD_API_TOKEN")
+        }
+      }
+    }
+  EOT
+
+  alloy_command = <<-EOT
+    cat > /etc/alloy/config.alloy <<'CFGEOF'
+    ${local.alloy_config}
+    CFGEOF
+    exec /bin/alloy run /etc/alloy/config.alloy --storage.path=/tmp/alloy-data
+  EOT
+}
+
 resource "aws_ecs_cluster" "main" {
   name = "${var.project}-${var.env}-cluster"
 
@@ -71,6 +98,23 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-group"         = "/ecs/${var.project}-${var.env}"
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "daphne"
+        }
+      }
+    },
+    {
+      name      = "grafana-alloy"
+      image     = "grafana/alloy:latest"
+      command   = ["sh", "-c", local.alloy_command]
+      essential = false
+      secrets = [
+        { name = "GRAFANA_CLOUD_API_TOKEN", valueFrom = var.grafana_secret_arn }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project}-${var.env}"
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "alloy"
         }
       }
     }

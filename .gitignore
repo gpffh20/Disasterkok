@@ -3,6 +3,8 @@
 *.tfstate
 *.tfstate.backup
 *.tfvars
+*.tfplan
+tfplan
 infra/kubernetes/**/secret.yaml
 
 ### Django ###
