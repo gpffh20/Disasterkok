@@ -78,7 +78,7 @@ jobs:
 
       - name: Run migrate task
         run: |
-          # GitHub Actions의 ${{ }} 치환은 셸이 파싱하기 전 텍스트 그대로 삽입되므로,
+          # GitHub Actions 템플릿 치환은 셸이 파싱하기 전 텍스트 그대로 삽입되므로,
           # 이중 따옴표 문자열 안에 따옴표 포함 JSON을 직접 끼워넣으면 깨진다.
           # jq로 실제 bash 변수를 안전하게 구성해서 사용한다.
           NETCFG=$(jq -n \
