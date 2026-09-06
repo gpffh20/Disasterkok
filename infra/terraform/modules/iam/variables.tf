@@ -22,3 +22,9 @@ variable "django_secret_arn" {
   description = "ECS task role에 Secrets Manager 읽기 권한을 줄 Django SECRET_KEY secret ARN"
   default     = ""
 }
+
+variable "grafana_secret_arn" {
+  type        = string
+  description = "ECS execution role에 읽기 권한을 줄 Grafana Cloud API 토큰 secret ARN"
+  default     = ""
+}

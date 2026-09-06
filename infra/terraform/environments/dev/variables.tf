@@ -66,3 +66,21 @@ variable "django_secret_key" {
   description = "Django SECRET_KEY (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
   sensitive   = true
 }
+
+variable "grafana_cloud_api_token" {
+  type        = string
+  description = "Grafana Cloud Access Policy 토큰 (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
+  sensitive   = true
+}
+
+variable "grafana_cloud_prometheus_url" {
+  type        = string
+  description = "Grafana Cloud Hosted Prometheus remote_write endpoint URL"
+  default     = "https://prometheus-prod-49-prod-ap-northeast-0.grafana.net/api/prom/push"
+}
+
+variable "grafana_cloud_username" {
+  type        = string
+  description = "Grafana Cloud Hosted Prometheus instance ID (basic auth username)"
+  default     = "3564138"
+}
