@@ -21,6 +21,7 @@ resource "aws_ecs_task_definition" "app" {
       name         = "gunicorn"
       image        = "${var.ecr_repository_url}:latest"
       command      = ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "config.wsgi:application"]
+      essential    = true
       portMappings = [{ containerPort = 8000, protocol = "tcp" }]
       environment = [
         { name = "DJANGO_SETTINGS_MODULE", value = "config.settings.production" },
@@ -41,6 +42,39 @@ resource "aws_ecs_task_definition" "app" {
           "awslogs-group"         = "/ecs/${var.project}-${var.env}"
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "gunicorn"
+        }
+      }
+    },
+    {
+      name    = "daphne"
+      image   = "${var.ecr_repository_url}:latest"
+      command = ["daphne", "-b", "0.0.0.0", "-p", "8001", "config.asgi:application"]
+      # essential=false로 지정: 일회성 migrate RunTask 시 gunicorn(essential=true) 컨테이너가
+      # migrate 실행 후 종료되면 task 전체가 정상 종료되어야 하는데, daphne이 essential=true면
+      # 계속 떠 있어서 task가 안 끝나고 "aws ecs wait tasks-stopped"가 멈춘다.
+      # 트레이드오프: 서비스 운영 중 daphne만 단독으로 죽으면 task 전체 재시작 없이는
+      # 복구가 안 됨 — Phase 1 범위에서는 감수, 필요해지면 별도 서비스로 분리 고려.
+      essential    = false
+      portMappings = [{ containerPort = 8001, protocol = "tcp" }]
+      environment = [
+        { name = "DJANGO_SETTINGS_MODULE", value = "config.settings.production" },
+        { name = "DEBUG", value = "False" },
+        { name = "ALLOWED_HOSTS", value = "*" }
+      ]
+      secrets = [
+        { name = "POSTGRES_DB", valueFrom = "${var.db_secret_arn}:dbname::" },
+        { name = "POSTGRES_USER", valueFrom = "${var.db_secret_arn}:username::" },
+        { name = "POSTGRES_PASSWORD", valueFrom = "${var.db_secret_arn}:password::" },
+        { name = "POSTGRES_HOST", valueFrom = "${var.db_secret_arn}:host::" },
+        { name = "POSTGRES_PORT", valueFrom = "${var.db_secret_arn}:port::" },
+        { name = "SECRET_KEY", valueFrom = var.django_secret_arn }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project}-${var.env}"
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "daphne"
         }
       }
     }
