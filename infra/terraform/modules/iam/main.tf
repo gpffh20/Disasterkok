@@ -67,6 +67,36 @@ resource "aws_iam_role_policy_attachment" "ec2_ssm" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_iam_role_policy" "github_actions_ecs" {
+  name = "${var.project}-${var.env}-github-actions-ecs"
+  role = aws_iam_role.github_actions.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "ecs:RunTask",
+          "ecs:UpdateService",
+          "ecs:DescribeServices",
+          "ecs:DescribeTasks",
+          "ecs:ListTasks"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = ["iam:PassRole"],
+        Resource = [
+          aws_iam_role.ecs_execution.arn,
+          aws_iam_role.ecs_task.arn
+        ]
+      }
+    ]
+  })
+}
+
 # ECS task가 assume하는 Trust Policy (execution role, task role 공용)
 data "aws_iam_policy_document" "ecs_tasks_assume" {
   statement {
