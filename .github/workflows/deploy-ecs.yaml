@@ -128,14 +128,6 @@ jobs:
 
       - name: Smoke test
         run: |
-          ENI=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --query "taskArns[0]" 
-
-      - name: Wait for service stable
-        run: |
-          aws ecs wait services-stable --cluster $ECS_CLUSTER --services $ECS_SERVICE
-
-      - name: Smoke test
-        run: |
           ENI=$(aws ecs list-tasks --cluster $ECS_CLUSTER --service-name $ECS_SERVICE --query "taskArns[0]" --output text | \
             xargs -I{} aws ecs describe-tasks --cluster $ECS_CLUSTER --tasks {} \
             --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value" --output text)
