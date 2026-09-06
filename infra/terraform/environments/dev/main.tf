@@ -22,9 +22,11 @@ provider "aws" {
 }
 
 module "vpc" {
-  source  = "../../modules/vpc"
-  project = var.project
-  env     = var.env
+  source               = "../../modules/vpc"
+  project              = var.project
+  env                  = var.env
+  public_subnet_cidr_b = var.public_subnet_cidr_b
+  az_b                 = var.az_b
 }
 
 module "security_group" {
@@ -59,4 +61,17 @@ module "ecr" {
   source  = "../../modules/ecr"
   project = var.project
   env     = var.env
+}
+
+module "ecs" {
+  source             = "../../modules/ecs"
+  project            = var.project
+  env                = var.env
+  aws_region         = var.aws_region
+  execution_role_arn = module.iam.ecs_execution_role_arn
+  task_role_arn      = module.iam.ecs_task_role_arn
+  ecr_repository_url = module.ecr.repository_url
+  subnet_id          = module.vpc.public_subnet_id
+  subnet_id_b        = module.vpc.public_subnet_id_b
+  security_group_id  = module.security_group.ecs_sg_id
 }

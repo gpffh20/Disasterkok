@@ -20,8 +20,16 @@ variable "public_subnet_cidr" {
   default     = "10.0.1.0/24"
 }
 
+variable "public_subnet_cidr_b" {
+  type = string
+}
+
 variable "az" {
   description = "Availability zone"
   type        = string
   default     = "ap-northeast-2a"
+}
+
+variable "az_b" {
+  type = string
 }
