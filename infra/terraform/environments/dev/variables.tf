@@ -44,3 +44,19 @@ variable "az_b" {
   description = "두 번째 퍼블릭 서브넷 가용 영역 (기존 서브넷과 다른 AZ)"
   default     = "ap-northeast-2c"
 }
+
+variable "db_name" {
+  type    = string
+  default = "disasterkok"
+}
+
+variable "db_username" {
+  type    = string
+  default = "disasterkok"
+}
+
+variable "db_password" {
+  type        = string
+  description = "RDS 마스터 비밀번호 (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
+  sensitive   = true
+}

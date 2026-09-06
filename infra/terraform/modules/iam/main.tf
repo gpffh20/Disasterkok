@@ -96,6 +96,22 @@ resource "aws_iam_role" "ecs_task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 }
 
+# ECS task role이 DB 자격증명 Secret을 읽을 수 있는 권한 (rds 모듈이 생성한 secret ARN을 받아서 부여)
+resource "aws_iam_role_policy" "ecs_task_secrets" {
+  count = var.db_secret_arn != "" ? 1 : 0
+  name  = "${var.project}-${var.env}-ecs-task-secrets"
+  role  = aws_iam_role.ecs_task.name
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = ["secretsmanager:GetSecretValue"],
+      Resource = var.db_secret_arn
+    }]
+  })
+}
+
 # Github Actions가 SSM을 통해 EC2에 명령 전송 권한
 resource "aws_iam_role_policy" "github_actions_ssm" {
   name = "${var.project}-${var.env}-github-actions-ssm"

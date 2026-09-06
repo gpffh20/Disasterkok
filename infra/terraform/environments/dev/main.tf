@@ -38,10 +38,11 @@ module "security_group" {
 }
 
 module "iam" {
-  source      = "../../modules/iam"
-  project     = var.project
-  env         = var.env
-  github_repo = var.github_repo
+  source        = "../../modules/iam"
+  project       = var.project
+  env           = var.env
+  github_repo   = var.github_repo
+  db_secret_arn = module.rds.secret_arn
 }
 
 module "ec2" {
@@ -61,6 +62,19 @@ module "ecr" {
   source  = "../../modules/ecr"
   project = var.project
   env     = var.env
+}
+
+module "rds" {
+  source                = "../../modules/rds"
+  project               = var.project
+  env                   = var.env
+  subnet_id             = module.vpc.public_subnet_id
+  subnet_id_b           = module.vpc.public_subnet_id_b
+  vpc_id                = module.vpc.vpc_id
+  ecs_security_group_id = module.security_group.ecs_sg_id
+  db_name               = var.db_name
+  db_username           = var.db_username
+  db_password           = var.db_password
 }
 
 module "ecs" {
