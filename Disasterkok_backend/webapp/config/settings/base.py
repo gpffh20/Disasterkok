@@ -60,6 +60,7 @@ PACKAGE_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'channels',
+    'django_prometheus',
 ]
 
 PROJECT_APPS = [
@@ -72,6 +73,7 @@ PROJECT_APPS = [
 INSTALLED_APPS = DJANGO_APPS + PACKAGE_APPS + PROJECT_APPS
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -81,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

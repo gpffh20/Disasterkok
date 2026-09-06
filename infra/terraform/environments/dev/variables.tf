@@ -32,3 +32,37 @@ variable "github_repo" {
   type        = string
   description = "GitHub 레포지토리 (owner/repo 형식)"
 }
+
+variable "public_subnet_cidr_b" {
+  type        = string
+  description = "두 번째 퍼블릭 서브넷 CIDR (RDS subnet group이 최소 2개 AZ를 요구해서 추가)"
+  default     = "10.0.2.0/24"
+}
+
+variable "az_b" {
+  type        = string
+  description = "두 번째 퍼블릭 서브넷 가용 영역 (기존 서브넷과 다른 AZ)"
+  default     = "ap-northeast-2c"
+}
+
+variable "db_name" {
+  type    = string
+  default = "disasterkok"
+}
+
+variable "db_username" {
+  type    = string
+  default = "disasterkok"
+}
+
+variable "db_password" {
+  type        = string
+  description = "RDS 마스터 비밀번호 (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
+  sensitive   = true
+}
+
+variable "django_secret_key" {
+  type        = string
+  description = "Django SECRET_KEY (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
+  sensitive   = true
+}
