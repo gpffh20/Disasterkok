@@ -60,3 +60,9 @@ variable "db_password" {
   description = "RDS 마스터 비밀번호 (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
   sensitive   = true
 }
+
+variable "django_secret_key" {
+  type        = string
+  description = "Django SECRET_KEY (terraform.tfvars에서 실제 값 주입, git에 커밋 금지)"
+  sensitive   = true
+}

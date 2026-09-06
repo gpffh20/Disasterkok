@@ -16,3 +16,9 @@ variable "db_secret_arn" {
   description = "ECS task role에 Secrets Manager 읽기 권한을 줄 대상 secret ARN"
   default     = ""
 }
+
+variable "django_secret_arn" {
+  type        = string
+  description = "ECS task role에 Secrets Manager 읽기 권한을 줄 Django SECRET_KEY secret ARN"
+  default     = ""
+}
