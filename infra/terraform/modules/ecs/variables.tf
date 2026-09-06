@@ -24,6 +24,16 @@ variable "ecr_repository_url" {
   type = string
 }
 
+variable "db_secret_arn" {
+  description = "RDS 자격증명이 담긴 Secrets Manager secret ARN (JSON: username/password/host/port/dbname)"
+  type        = string
+}
+
+variable "django_secret_arn" {
+  description = "Django SECRET_KEY가 담긴 Secrets Manager secret ARN"
+  type        = string
+}
+
 variable "subnet_id" {
   type = string
 }

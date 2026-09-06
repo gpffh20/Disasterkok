@@ -96,18 +96,22 @@ resource "aws_iam_role" "ecs_task" {
   assume_role_policy = data.aws_iam_policy_document.ecs_tasks_assume.json
 }
 
-# ECS task role이 DB 자격증명 Secret을 읽을 수 있는 권한 (rds 모듈이 생성한 secret ARN을 받아서 부여)
-resource "aws_iam_role_policy" "ecs_task_secrets" {
+# ECS execution role이 컨테이너 시작 전 Secret을 읽을 수 있는 권한.
+# 주의: task definition의 `secrets` 필드로 주입되는 값은 task role이 아니라
+# execution role 권한으로 조회된다 (task role은 컨테이너 실행 중 앱 코드가
+# AWS API를 직접 호출할 때만 쓰인다). 처음에 이걸 task_role에 잘못 붙였다가
+# "AccessDeniedException ... assumed-role/ecs-execution-role"로 확인 후 수정함.
+resource "aws_iam_role_policy" "ecs_execution_secrets" {
   count = var.db_secret_arn != "" ? 1 : 0
-  name  = "${var.project}-${var.env}-ecs-task-secrets"
-  role  = aws_iam_role.ecs_task.name
+  name  = "${var.project}-${var.env}-ecs-execution-secrets"
+  role  = aws_iam_role.ecs_execution.name
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
       Effect   = "Allow",
       Action   = ["secretsmanager:GetSecretValue"],
-      Resource = var.db_secret_arn
+      Resource = compact([var.db_secret_arn, var.django_secret_arn])
     }]
   })
 }

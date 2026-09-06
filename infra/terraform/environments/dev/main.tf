@@ -37,12 +37,22 @@ module "security_group" {
   my_ip   = var.my_ip
 }
 
+resource "aws_secretsmanager_secret" "django" {
+  name = "${var.project}-${var.env}-django-secret-key"
+}
+
+resource "aws_secretsmanager_secret_version" "django" {
+  secret_id     = aws_secretsmanager_secret.django.id
+  secret_string = var.django_secret_key
+}
+
 module "iam" {
-  source        = "../../modules/iam"
-  project       = var.project
-  env           = var.env
-  github_repo   = var.github_repo
-  db_secret_arn = module.rds.secret_arn
+  source            = "../../modules/iam"
+  project           = var.project
+  env               = var.env
+  github_repo       = var.github_repo
+  db_secret_arn     = module.rds.secret_arn
+  django_secret_arn = aws_secretsmanager_secret.django.arn
 }
 
 module "ec2" {
@@ -88,4 +98,6 @@ module "ecs" {
   subnet_id          = module.vpc.public_subnet_id
   subnet_id_b        = module.vpc.public_subnet_id_b
   security_group_id  = module.security_group.ecs_sg_id
+  db_secret_arn      = module.rds.secret_arn
+  django_secret_arn  = aws_secretsmanager_secret.django.arn
 }

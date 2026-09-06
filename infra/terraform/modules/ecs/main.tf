@@ -20,11 +20,21 @@ resource "aws_ecs_task_definition" "app" {
     {
       name         = "gunicorn"
       image        = "${var.ecr_repository_url}:latest"
+      command      = ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "config.wsgi:application"]
       portMappings = [{ containerPort = 8000, protocol = "tcp" }]
       environment = [
-        { name = "DJANGO_SETTINGS_MODULE", value = "config.settings.production" }
+        { name = "DJANGO_SETTINGS_MODULE", value = "config.settings.production" },
+        { name = "DEBUG", value = "False" },
+        { name = "ALLOWED_HOSTS", value = "*" }
       ]
-      # DB 자격증명은 Secrets Manager 연동 후 secrets 필드로 추가 예정
+      secrets = [
+        { name = "POSTGRES_DB", valueFrom = "${var.db_secret_arn}:dbname::" },
+        { name = "POSTGRES_USER", valueFrom = "${var.db_secret_arn}:username::" },
+        { name = "POSTGRES_PASSWORD", valueFrom = "${var.db_secret_arn}:password::" },
+        { name = "POSTGRES_HOST", valueFrom = "${var.db_secret_arn}:host::" },
+        { name = "POSTGRES_PORT", valueFrom = "${var.db_secret_arn}:port::" },
+        { name = "SECRET_KEY", valueFrom = var.django_secret_arn }
+      ]
       logConfiguration = {
         logDriver = "awslogs"
         options = {
