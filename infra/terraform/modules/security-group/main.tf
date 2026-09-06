@@ -47,9 +47,11 @@ resource "aws_security_group" "ecs" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
+    # ALB 없이 task 퍼블릭 IP로 직접 라우팅(Phase 1) — 컨테이너가 실제 리슨하는 8000번을 연다.
+    # nginx를 앞단에 두게 되면(향후) 80으로 좁히고 8000은 SG 내부 통신으로만 제한할 것.
+    description = "Gunicorn direct (no ALB, Phase 1)"
+    from_port   = 8000
+    to_port     = 8000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
