@@ -49,11 +49,7 @@ resource "aws_ecs_task_definition" "app" {
       name    = "daphne"
       image   = "${var.ecr_repository_url}:latest"
       command = ["daphne", "-b", "0.0.0.0", "-p", "8001", "config.asgi:application"]
-      # essential=false로 지정: 일회성 migrate RunTask 시 gunicorn(essential=true) 컨테이너가
-      # migrate 실행 후 종료되면 task 전체가 정상 종료되어야 하는데, daphne이 essential=true면
-      # 계속 떠 있어서 task가 안 끝나고 "aws ecs wait tasks-stopped"가 멈춘다.
-      # 트레이드오프: 서비스 운영 중 daphne만 단독으로 죽으면 task 전체 재시작 없이는
-      # 복구가 안 됨 — Phase 1 범위에서는 감수, 필요해지면 별도 서비스로 분리 고려.
+      # essential=false 이유: docs/interview/ecs-concepts.md 9번
       essential    = false
       portMappings = [{ containerPort = 8001, protocol = "tcp" }]
       environment = [
