@@ -78,11 +78,19 @@ jobs:
 
       - name: Run migrate task
         run: |
+          # GitHub Actions의 ${{ }} 치환은 셸이 파싱하기 전 텍스트 그대로 삽입되므로,
+          # 이중 따옴표 문자열 안에 따옴표 포함 JSON을 직접 끼워넣으면 깨진다.
+          # jq로 실제 bash 변수를 안전하게 구성해서 사용한다.
+          NETCFG=$(jq -n \
+            --argjson subnets '${{ steps.net.outputs.subnets }}' \
+            --argjson sg '${{ steps.net.outputs.sg }}' \
+            '{awsvpcConfiguration:{subnets:$subnets,securityGroups:$sg,assignPublicIp:"ENABLED"}}')
+
           TASK_ARN=$(aws ecs run-task \
             --cluster $ECS_CLUSTER \
             --task-definition $ECS_TASK_FAMILY \
             --launch-type FARGATE \
-            --network-configuration "{\"awsvpcConfiguration\":{\"subnets\":${{ steps.net.outputs.subnets }},\"securityGroups\":${{ steps.net.outputs.sg }},\"assignPublicIp\":\"ENABLED\"}}" \
+            --network-configuration "$NETCFG" \
             --overrides '{"containerOverrides":[{"name":"gunicorn","command":["python","manage.py","migrate","--noinput"]}]}' \
             --query "tasks[0].taskArn" --output text)
           echo "Waiting for migration task $TASK_ARN..."
