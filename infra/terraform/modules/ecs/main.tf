@@ -1,20 +1,57 @@
-terraform {
-  required_version = ">= 1.0.0" # Ensure that the Terraform version is 1.0.0 or higher
+resource "aws_ecs_cluster" "main" {
+  name = "${var.project}-${var.env}-cluster"
 
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws" # Specify the source of the AWS provider
-      version = "~> 4.0"        # Use a version of the AWS provider that is compatible with version
-    }
+  tags = {
+    Project = var.project
+    Env     = var.env
   }
 }
 
-provider "aws" {
-  region = "us-east-1" # Set the AWS region to US East (N. Virginia)
+resource "aws_ecs_task_definition" "app" {
+  family                   = "${var.project}-${var.env}-app"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = "512"
+  memory                   = "1024"
+  execution_role_arn       = var.execution_role_arn
+  task_role_arn            = var.task_role_arn
+
+  container_definitions = jsonencode([
+    {
+      name         = "gunicorn"
+      image        = "${var.ecr_repository_url}:latest"
+      portMappings = [{ containerPort = 8000, protocol = "tcp" }]
+      environment = [
+        { name = "DJANGO_SETTINGS_MODULE", value = "config.settings.production" }
+      ]
+      # DB 자격증명은 Secrets Manager 연동 후 secrets 필드로 추가 예정
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = "/ecs/${var.project}-${var.env}"
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "gunicorn"
+        }
+      }
+    }
+  ])
 }
 
-resource "aws_instance" "aws_example" {
-  tags = {
-    Name = "ExampleInstance" # Tag the instance with a Name tag for easier identification
+resource "aws_cloudwatch_log_group" "app" {
+  name              = "/ecs/${var.project}-${var.env}"
+  retention_in_days = 7
+}
+
+resource "aws_ecs_service" "app" {
+  name            = "${var.project}-${var.env}-service"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.app.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = [var.subnet_id, var.subnet_id_b]
+    security_groups  = [var.security_group_id]
+    assign_public_ip = true
   }
 }
