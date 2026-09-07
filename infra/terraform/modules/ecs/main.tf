@@ -102,10 +102,11 @@ resource "aws_ecs_task_definition" "app" {
       }
     },
     {
-      name      = "grafana-alloy"
-      image     = "grafana/alloy:latest"
-      command   = ["sh", "-c", local.alloy_command]
-      essential = false
+      name       = "grafana-alloy"
+      image      = "grafana/alloy:latest"
+      entryPoint = ["sh", "-c"]
+      command    = [local.alloy_command]
+      essential  = false
       secrets = [
         { name = "GRAFANA_CLOUD_API_TOKEN", valueFrom = var.grafana_secret_arn }
       ]
